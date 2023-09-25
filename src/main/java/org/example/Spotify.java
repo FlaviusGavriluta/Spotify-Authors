@@ -15,25 +15,40 @@ public class Spotify {
         populateData();
     }
 
-    public List<Track> searchForATrack(String querry) {
-        List<Song> songs = songAuthors.stream().flatMap(songAuthor -> songAuthor.getAlbums().stream().flatMap(album -> album.getSongs().stream().filter(song -> song.getName().equalsIgnoreCase(querry)))).toList();
+    public Track searchForATrack(String querry) {
+        Song foundSong = songAuthors.stream()
+                .flatMap(songAuthor -> songAuthor.getAlbums().stream()
+                        .flatMap(album -> album.getSongs().stream()
+                                .filter(song -> song.getName().equalsIgnoreCase(querry))))
+                .findAny()
+                .orElse(null);
 
-        List<Podcast> podcasts = podcastAuthors.stream().flatMap(podcastAuthor -> podcastAuthor.getPodcasts().stream().filter(podcast -> podcast.getName().equalsIgnoreCase(querry))).toList();
-        List<Track> result = new ArrayList<>();
-        result.addAll(songs);
-        result.addAll(podcasts);
+        Podcast foundPodcast = podcastAuthors.stream()
+                .flatMap(podcastAuthor -> podcastAuthor.getPodcasts().stream()
+                        .filter(podcast -> podcast.getName().equalsIgnoreCase(querry)))
+                .findAny()
+                .orElse(null);
 
-        return result;
+        return foundSong != null ? foundSong : foundPodcast;
     }
 
-    public List<Track> searchByAuthorName(String querry) {
-        List<Song> songs = songAuthors.stream().filter(songAuthor -> songAuthor.getName().equalsIgnoreCase(querry)).flatMap(songAuthor -> songAuthor.getAlbums().stream().flatMap(album -> album.getSongs().stream())).toList();
+    public List<String> searchByAuthorName(String querry) {
+        List<String> songsName = songAuthors.stream()
+                .filter(songAuthor -> songAuthor.getName().equalsIgnoreCase(querry))
+                .flatMap(songAuthor -> songAuthor.getAlbums().stream()
+                        .flatMap(album -> album.getSongs().stream()))
+                .map(Song::getName)
+                .toList();
 
-        List<Podcast> podcasts = podcastAuthors.stream().filter(podcastAuthor -> podcastAuthor.getName().equalsIgnoreCase(querry)).flatMap(podcastAuthor -> podcastAuthor.getPodcasts().stream()).toList();
+        List<String> podcastsName = podcastAuthors.stream()
+                .filter(podcastAuthor -> podcastAuthor.getName().equalsIgnoreCase(querry))
+                .flatMap(podcastAuthor -> podcastAuthor.getPodcasts().stream())
+                .map(Podcast::getName)
+                .toList();
 
-        List<Track> result = new ArrayList<>();
-        result.addAll(songs);
-        result.addAll(podcasts);
+        List<String> result = new ArrayList<>();
+        result.addAll(songsName);
+        result.addAll(podcastsName);
         return result;
     }
 
